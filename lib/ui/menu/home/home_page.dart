@@ -87,7 +87,7 @@ class HomePage extends GetView<HomeController> {
                 spaceVerticalSuperSmall,
                 Obx(
                   () => VText(
-                    'Sales: ${controller.tickets.length} · \$${controller.totalGrandTotal.value.toStringAsFixed(2)}',
+                    'Sales: ${controller.tickets.value.data?.length ?? 0} · \$${controller.totalGrandTotal.value.toStringAsFixed(2)}',
                     color: VColor.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
@@ -98,7 +98,7 @@ class HomePage extends GetView<HomeController> {
             children: [
               IconButton(
                 onPressed: () {
-                  VNavigation.toSearchTicketPage(controller.tickets);
+                  VNavigation.toSearchTicketPage(controller.tickets.value.data ?? []);
                 },
                 icon: const Icon(Icons.search, color: VColor.onSurface, size: iconMedium),
                 padding: EdgeInsets.zero,

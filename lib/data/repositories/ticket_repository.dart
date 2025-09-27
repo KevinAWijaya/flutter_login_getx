@@ -1,3 +1,5 @@
+import 'package:flutter_login_getx/core/base_resource.dart';
+
 import '/../core/globals.dart' as globals;
 import '../models/response/data_ticket.dart';
 import '../models/service.dart';
@@ -10,7 +12,7 @@ class TicketRepository {
 
   TicketRepository(this.apiClient);
 
-  Future<List<Ticket>> fetchTickets({String date = "2024-08-05"}) async {
+  Future<Resource<List<Ticket>>> fetchTickets({String date = "2024-08-05"}) async {
     final response = await apiClient.get(
       url: "${ApiUrl.getTicket}/$date",
       headers: {'Authorization': 'Bearer ${globals.accessToken}', 'Content-Type': 'application/json'},
@@ -23,9 +25,9 @@ class TicketRepository {
     if (response.statusCode == 200) {
       final responseLogin = ResponseDataTicket.fromJson(response.data);
 
-      return responseLogin.result!.ticket ?? [];
+      return Success(responseLogin.result!.ticket ?? []);
     } else {
-      throw Exception('Failed to load tickets: ${response.statusCode}');
+      return Error('Failed to load tickets: ${response.statusCode}');
     }
   }
 

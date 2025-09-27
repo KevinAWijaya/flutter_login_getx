@@ -52,7 +52,7 @@ class LoginController extends BaseController {
 
     try {
       final user = await authRepository.login(username: email, password: password);
-      if (user.result != null) {
+      if (user.data?.result != null) {
         if (rememberMe.value) {
           await sessionRepository.saveCredentials(email.trim(), password.trim(), true);
         } else {

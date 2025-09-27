@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login_getx/core/base_controller.dart';
+import 'package:flutter_login_getx/core/base_resource.dart';
 import 'package:flutter_login_getx/data/models/service.dart';
 import 'package:flutter_login_getx/data/repositories/service_repository.dart';
 import 'package:flutter_login_getx/data/repositories/ticket_repository.dart';
@@ -13,8 +14,8 @@ class HomeController extends BaseController {
   final TicketRepository ticketRepository;
   HomeController(this.serviceRepository, this.ticketRepository);
 
-  List<Service> services = List.empty(growable: true);
-  List<Ticket> tickets = List.empty(growable: true);
+  final services = Rx<Resource<List<Service>>>(const Loading());
+  final tickets = Rx<Resource<List<Ticket>>>(const Loading());
   var selectedCategory = 'All'.obs;
 
   DateTime selectedDate = DateTime.now();
@@ -43,8 +44,9 @@ class HomeController extends BaseController {
 
   Future<void> fetchServices() async {
     try {
+      services.value = const Loading();
       final result = await serviceRepository.fetchServices();
-      services = result;
+      services.value = result;
     } catch (e) {
       debugPrint("error fetchServices: $e");
       rethrow;
@@ -53,8 +55,9 @@ class HomeController extends BaseController {
 
   Future<void> fetchTickets() async {
     try {
+      tickets.value = Loading();
       final result = await ticketRepository.fetchTickets(date: DateFormat('yyyy-MM-dd').format(selectedDate));
-      tickets = result;
+      tickets.value = result;
     } catch (e) {
       debugPrint("error fetchTickets: $e");
       rethrow;
@@ -62,10 +65,11 @@ class HomeController extends BaseController {
   }
 
   void recalculate() {
+    final serviceCached = services.value.data ?? [];
     final filteredServices = selectedCategory.value == 'All'
-        ? services.where((s) => s.active == 1).toList()
-        : services.where((s) => s.name?.toLowerCase() == selectedCategory.toLowerCase() && s.active == 1).toList();
-    groupedTickets = _groupAndSortTicketsByService(services: filteredServices, tickets: tickets);
+        ? serviceCached.where((s) => s.active == 1).toList()
+        : serviceCached.where((s) => s.name?.toLowerCase() == selectedCategory.toLowerCase() && s.active == 1).toList();
+    groupedTickets = _groupAndSortTicketsByService(services: filteredServices, tickets: tickets.value.data ?? []);
     totalGrandTotal.value = groupedTickets.fold<int>(
       0,
       (sum, entry) => sum + entry.value.fold<int>(0, (subtotal, ticket) => subtotal + (ticket.grandTotal ?? 0)),

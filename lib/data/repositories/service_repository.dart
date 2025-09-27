@@ -1,3 +1,5 @@
+import 'package:flutter_login_getx/core/base_resource.dart';
+
 import '/../core/globals.dart' as globals;
 import '../models/response/data_service.dart';
 import '../models/service.dart';
@@ -9,7 +11,7 @@ class ServiceRepository {
 
   ServiceRepository(this.apiClient);
 
-  Future<List<Service>> fetchServices() async {
+  Future<Resource<List<Service>>> fetchServices() async {
     final response = await apiClient.get(
       url: ApiUrl.getService,
       headers: {'Authorization': 'Bearer ${globals.accessToken}', 'Content-Type': 'application/json'},
@@ -22,9 +24,9 @@ class ServiceRepository {
     if (response.statusCode == 200) {
       final responseLogin = ResponseDataService.fromJson(response.data);
 
-      return responseLogin.result!.service ?? [];
+      return Success(responseLogin.result!.service ?? []);
     } else {
-      throw Exception('Failed to load services: ${response.statusCode}');
+      return Error('Failed to load services: ${response.statusCode}');
     }
   }
 }

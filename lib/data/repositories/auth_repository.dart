@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter_login_getx/core/base_resource.dart';
+
 import '/../core/globals.dart' as globals;
 import '../models/response/response_login.dart';
 import '../services/api_client.dart';
@@ -10,13 +12,13 @@ class AuthRepository {
 
   AuthRepository(this.apiClient);
 
-  Future<ResponseLogin> login({required String username, required String password}) async {
+  Future<Resource<ResponseLogin>> login({required String username, required String password}) async {
     try {
       String basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
       final response = await apiClient.post(url: ApiUrl.login, headers: {'Authorization': basicAuth, 'Accept': 'application/json'});
 
       if (response == null) {
-        throw Exception("No response from server");
+        return Error("No response from server");
       }
 
       if (response.statusCode == 200) {
@@ -25,12 +27,12 @@ class AuthRepository {
         final responseLogin = ResponseLogin.fromJson(data);
         globals.accessToken = responseLogin.result!.accesstoken;
 
-        return responseLogin;
+        return Success(responseLogin);
       } else {
-        throw Exception(response.data?['message'] ?? "Login failed");
+        return Error(response.data?['message'] ?? "Login failed");
       }
     } catch (e) {
-      throw Exception("Login failed");
+      return Error("Unknown error occurred");
     }
   }
 }
